@@ -47,7 +47,7 @@ const long Client::_clientEventMask = \
 std::vector<Client*> Client::_clients;
 std::vector<uint> Client::_clientids;
 
-Client::Client(Window new_client, ClientInitConfig &initConfig, bool is_new)
+Client::Client(Window new_client, bool is_new)
     : PWinObj(true),
       _id(0),
       _size(0),
@@ -112,7 +112,7 @@ Client::Client(Window new_client, ClientInitConfig &initConfig, bool is_new)
     // so that Frame's state can match the state of the Client.
     setInitialState();
 
-    initConfig.parent_is_new = findOrCreateFrame(ap);
+    bool parent_is_new = findOrCreateFrame(ap);
 
     // Grab keybindings and mousebutton actions
     pekwm::keyGrabber()->grabKeys(_window);
@@ -123,7 +123,7 @@ Client::Client(Window new_client, ClientInitConfig &initConfig, bool is_new)
 
     X11::ungrabServer(true);
 
-    setClientInitConfig(initConfig, is_new, ap);
+    initClientInitConfig(is_new, parent_is_new, ap);
 
     _alive = true;
 
@@ -174,7 +174,9 @@ Client::~Client(void)
         X11::ungrabButton(AnyButton, AnyModifier, _window);
         pekwm::keyGrabber()->ungrabKeys(_window);
         XRemoveFromSaveSet(X11::getDpy(), _window);
-        PWinObj::mapWindow();
+        if (_init_config.initialized) {
+            PWinObj::mapWindow();
+        }
     }
 
     // free names and size hint
@@ -365,22 +367,29 @@ Client::setInitialState(void)
  * Ensure the Client is (un) mapped and give input focus if requested.
  */
 void
-Client::setClientInitConfig(ClientInitConfig &initConfig, bool is_new,
-                            AutoProperty *prop)
+Client::initClientInitConfig(bool is_new, bool parent_is_new,
+                             AutoProperty *prop)
 {
-    initConfig.map = (! _iconified && _parent->isMapped());
-    initConfig.focus = false;
+    _init_config.initialized = false;
+    _init_config.parent_is_new = parent_is_new;
+
+    _init_config.map =
+        ! _iconified
+        || (parent_is_new
+            && (_sticky || _workspace == Workspaces::getActive()))
+        || (! parent_is_new && _parent->isMapped());
+    _init_config.focus = false;
 
     if (is_new && _parent->isMapped()) {
-        initConfig.focus = pekwm::config()->isFocusNew();
-        if (! initConfig.focus && _transient_for) {
-            initConfig.focus = _transient_for->isFocused()
+        _init_config.focus = pekwm::config()->isFocusNew();
+        if (! _init_config.focus && _transient_for) {
+            _init_config.focus = _transient_for->isFocused()
                 && pekwm::config()->isFocusNewChild();
         }
 
         // overwrite focus if set in the autoproperties
         if (prop && prop->isMask(AP_FOCUS_NEW)) {
-            initConfig.focus = prop->focus_new;
+            _init_config.focus = prop->focus_new;
         }
     }
 }

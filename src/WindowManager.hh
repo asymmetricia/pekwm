@@ -95,9 +95,10 @@ private:
     void handleEvent(XEvent &ev);
     bool handleEventHandlerEvent(XEvent &ev);
 
+    void handleCreateNotify(XCreateWindowEvent *ev);
+    void handleDestroyWindowEvent(XDestroyWindowEvent *ev);
     void handleMapRequestEvent(XMapRequestEvent *ev);
     void handleUnmapEvent(XUnmapEvent *ev);
-    void handleDestroyWindowEvent(XDestroyWindowEvent *ev);
 
     void handleConfigureRequestEvent(XConfigureRequestEvent *ev);
     void handleClientMessageEvent(XClientMessageEvent *ev);
@@ -123,6 +124,7 @@ private:
     void initHints(void);
 
     Client *createClient(Window window, bool is_new);
+    void initClient(Client *client);
 
 protected:
     /** pekwm_cmd buffer for commands that do not fit in 20 bytes. */

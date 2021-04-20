@@ -182,7 +182,7 @@ Frame::Frame(Client *client, AutoProperty *ap)
     client->configureRequestSend();
 
     // Figure out if we should be hidden or not, do not read autoprops
-    PDecor::setWorkspace(_client->getWorkspace());
+    _workspace = _client->getWorkspace();
 
     woListAdd(this);
     _wo_map[_window] = this;
