@@ -61,6 +61,41 @@ namespace StringUtil {
 	bool ascii_ncase_equal(const char *lhs, const char *rhs);
 }
 
+class OverlapRange {
+public:
+	OverlapRange(int start, int num)
+		: _start(start),
+		  _num(num)
+	{
+		reset();
+	}
+
+	bool end(void) const {return _end; }
+
+	void reset(void)
+	{
+		_end = false;
+		_curr = _start;
+	}
+
+	int operator*(void) const { return _curr; }
+
+	OverlapRange& operator++(void)
+	{
+		if (++_curr == _num) {
+			_curr = 0;
+		}
+		_end = _curr == _start;
+		return *this;
+	}
+
+private:
+	int _start;
+	int _curr;
+	int _num;
+	bool _end;
+};
+
 namespace Util {    
 	template<typename T>
 	class StringMap : public std::map<StringUtil::Key, T> {
