@@ -1,0 +1,78 @@
+name: release
+
+on:
+  push:
+    tags: ["release-*"]
+
+env:
+  BUILD_TYPE: Release
+
+jobs:
+  package:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Create Build Environment
+      run: |
+        sudo apt-get update
+        sudo apt-get -y install cmake build-essential libx11-dev \
+          libfreetype6-dev libjpeg62-dev curl ca-certificates
+        cmake -E make_directory build
+ 
+    - name: Configure CMake
+      shell: bash
+      working-directory: build
+      run: cmake $GITHUB_WORKSPACE -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DTESTS=ON
+
+    - name: Build
+      working-directory: build
+      shell: bash
+      run: cmake --build . -j --config $BUILD_TYPE
+
+    - name: Test
+      working-directory: build
+      shell: bash
+      run: ctest -C $BUILD_TYPE
+
+    - name: Compute Version
+      run: |
+        SEMVER="${{ github.ref_name }}"
+        SEMVER="${SEMVER#release-}"
+        echo "semver=$SEMVER" >> "$GITHUB_ENV"
+
+    - name: Package
+      working-directory: build
+      shell: bash
+      run: |
+        set -e
+        mkdir -p /tmp/go-1.18
+        curl -Lf https://go.dev/dl/go1.18.linux-amd64.tar.gz \
+        | tar -C /tmp/go-1.18 --strip-components 1 -xz
+        export PATH=$HOME/go/bin:/tmp/go-1.18/bin:$PATH
+        go install -v github.com/goreleaser/nfpm/v2/cmd/nfpm@v2.15.0
+        cmake --install . --prefix target/
+        SEMVER="${{ env.semver }}" nfpm pkg -f ../nfpm.yaml -p deb
+
+    - name: Release
+      id: create_release      
+      uses: actions/create-release@v1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # This token is provided by Actions, you do not need to create your own token
+      with:
+        tag_name: ${{ env.semver }}
+        release_name: Release ${{ env.semver }}
+        draft: false
+        prerelease: false
+
+    - name: Upload
+      id: upload-release-asset-linux64
+      uses: actions/upload-release-asset@v1.0.1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ github.event.release.upload_url }}
+        asset_path: ../pekwm_${{ env.semver }}_amd64.deb
+        asset_name: grpn_${{ env.semver }}_amd64.deb
+        asset_content_type: application/octet-stream
