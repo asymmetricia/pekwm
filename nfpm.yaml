@@ -47,8 +47,12 @@ depends:
   - libxrandr2 (>= 2:1.2.0)
 
 contents:
-  - src: target
-    dst: /usr
+  - src: target/share
+    dst: /usr/share
+  - src: target/bin
+    dst: /usr/bin
+  - src: target/etc
+    dst: /etc
 
 deb:
   compression: xz

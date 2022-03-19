@@ -24,7 +24,11 @@ jobs:
     - name: Configure CMake
       shell: bash
       working-directory: build
-      run: cmake $GITHUB_WORKSPACE -DCMAKE_BUILD_TYPE=$BUILD_TYPE -DTESTS=ON
+      run: |
+        cmake \
+          -DCMAKE_INSTALL_PREFIX=target \
+          -DTESTS=ON \
+          ..
 
     - name: Build
       working-directory: build
@@ -46,13 +50,13 @@ jobs:
       working-directory: build
       shell: bash
       run: |
-        set -e
+        set -ex
+        cmake --build . --target install --config $BUILD_TYPE
         mkdir -p /tmp/go-1.18
         curl -Lf https://go.dev/dl/go1.18.linux-amd64.tar.gz \
         | tar -C /tmp/go-1.18 --strip-components 1 -xz
         export PATH=$HOME/go/bin:/tmp/go-1.18/bin:$PATH
-        go install -v github.com/goreleaser/nfpm/v2/cmd/nfpm@v2.15.0
-        fakeroot cmake --install . --prefix target/
+        go install github.com/goreleaser/nfpm/v2/cmd/nfpm@v2.15.0
         SEMVER="${{ env.semver }}" nfpm pkg -f ../nfpm.yaml -p deb
 
     - name: Release
