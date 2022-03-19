@@ -357,7 +357,7 @@ Config::loadFiles(CfgParser::Entry *section)
 	section->parseKeyValues(keys.begin(), keys.end());
 
 	// Free up resources
-	for_each(keys.begin(), keys.end(), Util::Free<CfgParserKey*>());
+	std::for_each(keys.begin(), keys.end(), Util::Free<CfgParserKey*>());
 }
 
 //! @brief Loads MOVERESIZE section of main configuration
@@ -369,25 +369,14 @@ Config::loadMoveResize(CfgParser::Entry *section)
 		return;
 	}
 
-	std::vector<CfgParserKey*> keys;
-	keys.push_back(new CfgParserKeyNumeric<int>("EDGEATTRACT",
-						    _moveresize_edgeattract, 0, 0));
-	keys.push_back(new CfgParserKeyNumeric<int>("EDGERESIST",
-						    _moveresize_edgeresist, 0, 0));
-	keys.push_back(new CfgParserKeyNumeric<int>("WINDOWATTRACT",
-						    _moveresize_woattract, 0, 0));
-	keys.push_back(new CfgParserKeyNumeric<int>("WINDOWRESIST",
-						    _moveresize_woresist, 0, 0));
-	keys.push_back(new CfgParserKeyBool("OPAQUEMOVE",
-					    _moveresize_opaquemove));
-	keys.push_back(new CfgParserKeyBool("OPAQUERESIZE",
-					    _moveresize_opaqueresize));
-
-	// Parse data
+	CfgParserKeys keys;
+	keys.add_numeric<int>("EDGEATTRACT", _moveresize_edgeattract, 0, 0);
+	keys.add_numeric<int>("EDGERESIST", _moveresize_edgeresist, 0, 0);
+	keys.add_numeric<int>("WINDOWATTRACT", _moveresize_woattract, 0, 0);
+	keys.add_numeric<int>("WINDOWRESIST", _moveresize_woresist, 0, 0);
+	keys.add_bool("OPAQUEMOVE", _moveresize_opaquemove);
+	keys.add_bool("OPAQUERESIZE", _moveresize_opaqueresize);
 	section->parseKeyValues(keys.begin(), keys.end());
-
-	// Free up resources
-	for_each(keys.begin(), keys.end(), Util::Free<CfgParserKey*>());
 }
 
 //! @brief Loads SCREEN section of main configuration
