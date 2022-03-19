@@ -1,6 +1,6 @@
 //
 // WinLayouter.cc for pekwm
-// Copyright (C) 2021 Claes Nästén
+// Copyright (C) 2021-2022 Claes Nästén <pekdon@gmail.com>
 // Copyright © 2012-2013 Andreas Schlick <ioerror{@}lavabit{.}com>
 //
 // This program is licensed under the GNU GPL.
@@ -147,6 +147,27 @@ private:
 			}
 		}
 		return placed;
+	}
+};
+
+/**
+ * Place windows centered on the current head.
+ */
+class LayouterCentered : public WinLayouter {
+public:
+	LayouterCentered(void) : WinLayouter() {}
+	virtual ~LayouterCentered(void) { };
+
+	virtual bool layout_impl(Frame *wo)
+	{
+		if (! wo) {
+			return false;
+		}
+
+		wo->move(_gm.x + (_gm.width / 2) - (wo->getWidth() / 2),
+			 _gm.y + (_gm.height / 2) - (wo->getHeight() / 2));
+
+		return true;
 	}
 };
 
@@ -309,18 +330,20 @@ Geometry WinLayouter::_gm;
 
 WinLayouter *WinLayouterFactory(std::string l) {
 	Util::to_upper(l);
-	const char *str = l.c_str();
 
-	if (! strcmp(str, "SMART")) {
+	if (! l.compare("SMART")) {
 		return new LayouterSmart;
 	}
-	if (! strcmp(str, "MOUSENOTUNDER")) {
+	if (! l.compare("CENTERED")) {
+		return new LayouterCentered;
+	}
+	if (! l.compare("MOUSENOTUNDER")) {
 		return new LayouterMouseNotUnder;
 	}
-	if (! strcmp(str, "MOUSECENTERED")) {
+	if (! l.compare("MOUSECENTERED")) {
 		return new LayouterMouseCentred;
 	}
-	if (! strcmp(str, "MOUSETOPLEFT")) {
+	if (! l.compare("MOUSETOPLEFT")) {
 		return new LayouterMouseTopLeft;
 	}
 	return 0;
