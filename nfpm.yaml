@@ -1,0 +1,58 @@
+name: pekwm
+arch: amd64
+platform: linux
+
+version: v${SEMVER}
+
+version_schema: semver
+
+section: x11
+priority: optional
+
+maintainer: Claes Nästén <pekdon@gmail.com>
+description: |
+  very light window manager
+  . 
+  Pekwm is a window manager that once up on a time was based on the aewm++ window
+  manager, but it has evolved enough that it no longer resembles aewm++ at all.
+  It has a much expanded feature-set, including window grouping (similar to ion,
+  pwm, or fluxbox), autoproperties, xinerama, keygrabber that supports keychains,
+  and much more.
+  .
+  Some of its characteristics are:
+   * Lightweight and Unobtrusive, a window manager shouldn't be noticed.
+   * Very configurable, everyone work and think in different ways.
+   * Automatic properties, for all the lazy people, make things appear as they
+     should when starting applications.
+   * Chainable Keygrabber, usability for everyone.
+
+homepage: https://github.com/pekdon/pekwm/
+
+provides:
+  - x-window-manager
+
+depends:
+  - menu
+  - x11-utils
+  - libc6 (>= 2.15)
+  - libgcc-s1 (>= 3.0)
+  - libjpeg62-turbo
+  - libpng16-16 (>= 1.6.2-1)
+  - libstdc++6 (>= 5.2)
+  - libx11-6
+  - libxext6
+  - libxft2 (>> 2.1.1)
+  - libxinerama1
+  - libxpm4
+  - libxrandr2 (>= 2:1.2.0)
+
+contents:
+  - src: target/share
+    dst: /usr/share
+  - src: target/bin
+    dst: /usr/bin
+  - src: target/etc
+    dst: /etc
+
+deb:
+  compression: xz
