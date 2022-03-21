@@ -47,10 +47,8 @@ depends:
   - libxrandr2 (>= 2:1.2.0)
 
 contents:
-  - src: target/share
-    dst: /usr/share
-  - src: target/bin
-    dst: /usr/bin
+  - src: target/usr
+    dst: /usr
   - src: target/etc
     dst: /etc
 
